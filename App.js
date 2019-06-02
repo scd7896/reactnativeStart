@@ -8,26 +8,38 @@ export default class App extends Component {
   state = {
     isLoad : false,
     error : null,
-    whetherData : ''
+    whetherData : '',
+    temperature : null,
+    name : null
   }
   componentDidMount(){
     navigator.geolocation.getCurrentPosition(
       position => {
-        this.setState({
-          isLoad : true
-        });
+        this._getWeather(position.coords.latitude, position.coords.longitude);
       }, error => {
         this.setState({
           error : error
         })
       });
   }
+  _getWeather =(lat,lon)=>{
+    fetch(`http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&APPID=${API_KEY}`)
+    .then(response => response.json())
+    .then(json=>{
+      console.log(json.weather[0].main);
+      this.setState({
+        temperature : json.main.temp,
+        name : json.weather[0].main,
+        isLoad:true
+      })
+    })
+  }
   render() {
-    const {isLoad , error} = this.state;
+    const {isLoad , error, temperature, name} = this.state;
     return (
       <View style={styles.container}>
         <StatusBar hidden = {true}></StatusBar>
-        {isLoad ? <Wheather></Wheather> : 
+        {isLoad ? <Wheather weatherName = {name} temp = {Math.floor(temperature - 269)}></Wheather> : 
             <View style = {styles.loading}>
               <Text style ={styles.loadingText}>날씨 정보를 받아오고있자너</Text>
               {error ? <Text style = {styles.errorText}>{error}</Text> : null}
